@@ -1,6 +1,6 @@
 import pytest
 
-from app import create_app, student_summary, validate_grades
+from app import calculate_average, create_app, student_summary, validate_grades
 
 
 @pytest.fixture
@@ -38,6 +38,11 @@ def test_student_summary_calculates_average_correctly():
     assert summary["average"] == 4.17
 
 
+def test_calculate_average_raises_error_for_empty_list():
+    with pytest.raises(ValueError, match="La lista de notas no puede estar vacia"):
+        calculate_average([])
+
+
 def test_student_summary_marks_student_as_passed():
     summary = student_summary(1003)
 
@@ -69,3 +74,54 @@ def test_validate_grades_rejects_empty_list():
 def test_validate_grades_rejects_grade_out_of_range():
     with pytest.raises(ValueError, match="Cada nota debe estar entre 0 y 5"):
         validate_grades([4.0, 6.0])
+
+
+def test_validate_grades_rejects_non_numeric_grade():
+    with pytest.raises(ValueError, match="Todas las notas deben ser numericas"):
+        validate_grades([4.0, "invalid"])
+
+
+def test_validate_grades_rejects_not_list():
+    with pytest.raises(ValueError, match="Debes enviar una lista de notas"):
+        validate_grades("not a list")
+
+
+def test_student_summary_returns_404_for_unknown_student(client):
+    response = client.get("/students/9999/summary")
+
+    assert response.status_code == 404
+    assert response.get_json() == {"error": "Estudiante no encontrado"}
+
+
+def test_evaluate_grades_returns_error_for_empty_list(client):
+    response = client.post("/grades/evaluate", json={"grades": []})
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_evaluate_grades_returns_error_for_invalid_grades(client):
+    response = client.post("/grades/evaluate", json={"grades": [4.0, "invalid"]})
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_evaluate_grades_returns_error_for_out_of_range_grade(client):
+    response = client.post("/grades/evaluate", json={"grades": [4.0, 6.0]})
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_evaluate_grades_handles_missing_grades(client):
+    response = client.post("/grades/evaluate", json={})
+
+    assert response.status_code == 400
+    assert "error" in response.get_json()
+
+
+def test_student_summary_marks_student_as_failed():
+    summary = student_summary(1002)
+
+    assert summary["passed"] is False
