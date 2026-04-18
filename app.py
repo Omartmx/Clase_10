@@ -4,7 +4,11 @@ from flask import Flask, jsonify, request
 STUDENTS = {
     1001: {"name": "Ana", "grades": [4.5, 3.8, 4.2]},
     1002: {"name": "Luis", "grades": [2.8, 3.1, 2.9]},
-    1003: {"name": "Marta", "grades": [5.0, 4.7, 4.9]},
+    1003: {"name": "Marta1", "grades": [5.0, 4.7, 4.9]},
+    1004: {"name": "Marta2", "grades": [5.0, 4.7, 4.9]},
+    1005: {"name": "Marta3", "grades": [5.0, 4.7, 4.9]},
+    1006: {"name": "Marta4", "grades": [5.0, 4.7, 4.9]},
+
 }
 
 
